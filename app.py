@@ -30,7 +30,7 @@ def resource_not_found(e):
 # ==============================================================================
 
 @app.route('/')
-@app.route('/library/', methods=['GET'])
+#@app.route('/library/', methods=['GET'])
 def all_book():
     response = lib.serialize()
     response.headers["Content-Type"] = "application/json; charset=utf-8"
@@ -50,18 +50,28 @@ def get_book_by_isbn(isbn):
         abort(404, description="No book with ISBN ")
 
 
-@app.route('/library/', methods=['POST'])
+@app.route('/library/', methods=['GET', 'POST'])
 def add_book():
-    content_type = request.headers.get('Content-Type')
-    if content_type == 'application/json':
-        json = request.json
-        if 'isbn' in json and 'title' in json and 'author' in json:
-            lib.addBook(json['title'], json['author'], json['isbn'])
+
+    if request.method == 'POST':
+        form = request.form
+        if 'isbn' in form and 'title' in form and 'author' in form:
+            lib.addBook(form['title'], form['author'], form['isbn'])
             response = Response("The book was added successful")
             response.status = 201
+            response.location = "library" + str(form['isbn'])
             return response
         else:
             abort(400, description="Error book information ")
+    else:
+        return'''
+        <form action="/library" method="POST">
+            ISBN : <input type="text" name="isbn"> <br/>
+            Titre : <input type="text" name="title"> <br/>
+            Auteur : <input type="text" name="author"> <br/>
+            <input type="submit" value="Envoyer"> <br/>
+            </form>
+        '''
 
 
 @app.route('/library/<int:isbn>/<string:author>/<string:title>', methods=['PUT'])
@@ -90,6 +100,16 @@ def del_book_by_isbn(isbn):
         return response
     else:
         abort(404, description="No book with ISBN ")
+
+
+@app.route('/all')
+def getHtmlBooks():
+    return render_template('library.html', books=lib.allBooks())
+
+
+@app.route('/second')
+def second():
+    return "Bienvenu sur cette nouvelle page!"
 
 
 if __name__ == '__main__':

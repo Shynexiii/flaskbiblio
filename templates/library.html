@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for book in books %}
+        <p>{{ book.getISBN() }} - {{ book.getTitle() }} - {{ book.getAuthor() }}</p>
+    {% endfor %}
+
+    <p>Allons à une <a href="/second">seconde page!</a></p>
+
+{% endblock %}
